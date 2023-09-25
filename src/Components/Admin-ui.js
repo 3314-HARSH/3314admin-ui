@@ -59,7 +59,6 @@ function AdminUi() {
         `https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json`
       );
       setUsersData({ ...usersData, all: response.data });
-      console.log(response.data);
       setRecords(response.data.slice(firstIndex, lastIndex));
       return response.data;
     } catch {
@@ -131,11 +130,10 @@ function AdminUi() {
         (userData) => userData[category].toLowerCase().includes(text.toLowerCase())
       );
     }
-   
-    console.log(newData);
     setFilteredData(newData);
   };
 
+//debounceSearch implemenation
   const debounceSearch = (event, debounceTimeout, category) => {
     if (debounceTimeout !== null) {
       clearTimeout(debounceTimeout);
@@ -143,10 +141,9 @@ function AdminUi() {
     let timeOut = setTimeout(() => performSearch(event, category), 500);
     setDebounceTimeout(timeOut);
   };
-  // console.log(filteredData , "fi" , "all", usersData.all )
+
  const handleChecked = (e) => {
    const {name , checked} = e.target;
-   console.log(name , checked)
    if(searchText){
     if(name === "allData"){
       let id = new Set();
@@ -184,11 +181,8 @@ function AdminUi() {
     }
      setRecords(usersData.all.slice(firstIndex, lastIndex));
    }
-  
-  
-  //  console.log(newData ,"newData");
-  //  console.log(usersData.all,"all")
  }
+ 
   const handleDeleteAll = () => {
     let newData = usersData.all.filter((record) => record.isChecked !== true);
     setUsersData({...usersData , all:newData});
