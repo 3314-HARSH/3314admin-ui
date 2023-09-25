@@ -1,0 +1,22 @@
+.row{
+     display: table-row;
+     padding: 10rem;
+}
+.row > * {
+     padding:1rem;
+     text-align: left;
+     border-bottom: 1px solid #ddd;
+}
+.row__icon{
+     height:1.5rem;
+     width:1.5rem;
+     fill:  #999;
+     cursor: pointer;
+}
+.row__icon--delete{
+     margin-left: 1rem;
+     fill:red;
+}
+
+
+

@@ -1,0 +1,136 @@
+.container{
+  width: 90%;
+  margin: 0 auto;
+}
+.header{
+     display: flex;
+     align-items: center;
+}
+.search{
+     width:85%;
+     margin: 0 auto 0 0;
+     display: flex;
+     align-items: center;
+     padding: 1rem 0;
+}
+.search__input{
+         font-size: 1rem;
+         font-family: inherit;
+         border: none;
+         background-color:#f4f2f2;
+         width:100%;
+         padding:.7rem 2rem;
+         border-radius: 100px;
+         margin-right: -3.5rem;
+}
+.search__btn{
+     border: none;
+     margin-top: .5rem;
+     background-color: #f4f2f2;
+}
+.search__icon{
+     height:1.5rem;
+     width:1.5rem;
+     fill:  #999;
+}
+
+.search__input:focus{
+     outline: none;
+     background-color: #f0eeee;
+}
+
+.search__input::-webkit-input-placeholder{
+     font-weight: 100;
+     font-size: 1rem;
+     color:#999;
+}
+
+.search__input:focus + .search__btn{
+     background-color:  #f0eeee;
+}
+
+.dropdown{
+     padding:.6rem 1rem;
+     border-radius: 3px;
+     background-color:#f4f2f2;
+     font-size: 1rem;
+     font-weight: 700;
+     opacity: .6;
+     font-family: inherit;
+     cursor: pointer;
+}
+table{
+     width: 100%;
+     margin: 0 auto;
+     border-collapse: collapse;
+}
+th{
+     padding:1rem;
+     text-align: left;
+     border-bottom: 1px solid #ddd;
+}
+.btn{
+    padding:1rem 2rem;
+    background-color:#e06363; 
+    font-size: 1rem;
+    color:#f4f2f2;
+    border-style: none;
+    border-radius: 100px;
+    cursor: pointer;
+}
+.updatingForm{
+     height: 100vh;
+     width:100%;
+     background-color:rgba( 0,0,0, .6);
+     position: fixed;
+     top:0;
+     left:0;
+     z-index: 5;
+     opacity: 0;
+     visibility: hidden;
+     transition: all .3s;
+     backdrop-filter: blur(5px);
+}
+.updatingForm:target{
+     opacity: 1;
+     visibility: visible;
+   }
+
+   /* pagination */
+.pagination{
+  display: flex;
+  margin:1rem 0;
+  align-items: center;
+}
+.pagination__items{
+     display: flex;
+     flex-grow:1;
+     justify-content: center;
+     list-style: none;
+     padding-left: 0;
+}
+.pagination__icon{
+     height:.6rem;
+     width:1rem;
+}
+.pagination__item{
+     margin: 0 1rem;
+
+}
+.pagination__btn{
+  border-radius: 100px;
+  width:2rem;
+  height: 1.5rem;
+  border-style: none;
+  cursor: pointer;
+}
+.active{
+     background-color: #2998ff;
+}
+.disabled{
+     background-color: #999;
+     cursor:default;
+}
+.checkedUser:checked ~ th {
+     background-color: aqua;
+}
