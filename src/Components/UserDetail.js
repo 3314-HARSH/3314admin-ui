@@ -4,7 +4,7 @@ import Icons from "../assets/sprite.svg";
 
 function UserDetail({ name, email, role, deleteUserDetail, selectUserData,userRecord,handleChecked}) {
   return (
-    <tr className="row">
+    <tr className={`row ${userRecord?.isChecked && "row-checked"}`}>
       <td>
         <input type="checkbox" name={email}checked={userRecord?.isChecked || false} onChange={(e) =>handleChecked(e)} />
       </td>

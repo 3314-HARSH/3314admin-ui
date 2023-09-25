@@ -11,7 +11,7 @@ function AdminUi() {
   const [usersData, setUsersData] = useState({ all: [], selected: -1 });
   const { enqueueSnackbar } = useSnackbar();
   const [filteredData, setFilteredData] = useState([]);
-  const [searchCategory, setSearchCategory] = useState("name");
+  const [searchCategory, setSearchCategory] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [debounceTimeout, setDebounceTimeout] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -118,9 +118,20 @@ function AdminUi() {
     if(!text){
       setFilteredData([]);
     }
-    const newData = usersData.all.filter(
-      (userData) => userData[category].toLowerCase() === text.toLowerCase()
-    );
+    text = text.trim()
+    let newData;
+    if(category === "all"){
+      newData = usersData.all.filter((user) => (
+        [user.name , user.email, user.role].some((value) =>(
+          value.toLowerCase().includes(text.toLowerCase())
+        ))
+      ))
+    }else{
+       newData = usersData.all.filter(
+        (userData) => userData[category].toLowerCase().includes(text.toLowerCase())
+      );
+    }
+   
     console.log(newData);
     setFilteredData(newData);
   };
@@ -219,6 +230,7 @@ function AdminUi() {
             <option disabled value="DEFAULT">
               All fields
             </option>
+            <option value ="all">All</option>
             <option value="name">Name</option>
             <option value="email">Email</option>
             <option value="role">Role</option>
