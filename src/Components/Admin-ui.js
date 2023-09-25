@@ -182,7 +182,7 @@ function AdminUi() {
      setRecords(usersData.all.slice(firstIndex, lastIndex));
    }
  }
- 
+
   const handleDeleteAll = () => {
     let newData = usersData.all.filter((record) => record.isChecked !== true);
     setUsersData({...usersData , all:newData});
