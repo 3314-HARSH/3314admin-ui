@@ -59,6 +59,17 @@
      font-family: inherit;
      cursor: pointer;
 }
+.isloading{
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     width: 100%;
+     height: 90vh;
+}
+.display{
+     min-height: 90vh;
+}
 table{
      width: 100%;
      margin: 0 auto;

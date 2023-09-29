@@ -4,29 +4,29 @@ import Icons from "../assets/sprite.svg";
 import UserDetail from "./UserDetail";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useSnackbar } from "notistack";
 import UpdateUser from "./UpdateUser";
+import { Box } from "@mui/system";
+import {CircularProgress} from "@mui/material";
+import { SentimentDissatisfied } from "@mui/icons-material";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function AdminUi() {
   const [usersData, setUsersData] = useState({ all: [], selected: -1 });
-  const { enqueueSnackbar } = useSnackbar();
   const [filteredData, setFilteredData] = useState([]);
   const [searchCategory, setSearchCategory] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [debounceTimeout, setDebounceTimeout] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [records , setRecords] = useState([]);
-  
+  const [isLoading , setIsLoading] = useState(false);
+  const [ npage , setNPage] = useState(1);
+
   //pagination
   const perPageRecords = 10;
   const lastIndex = currentPage * perPageRecords;
   const firstIndex = lastIndex - perPageRecords;
-
-  let npage = Math.ceil(usersData.all.length / perPageRecords);
-  if(searchText) {
-    npage = Math.ceil(filteredData.length / perPageRecords);
-  }
-
   const numbers = [...new Array(npage + 1).keys()].slice(1);
   const prevPageHandler = () => {
     if (currentPage !== 1) {
@@ -55,17 +55,25 @@ function AdminUi() {
   //fetching userData from backend
   const fetchUsersData = async () => {
     try {
+      setIsLoading(true);
       let response = await axios.get(
         `https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json`
       );
+      setIsLoading(false);
       setUsersData({ ...usersData, all: response.data });
+      
       setRecords(response.data.slice(firstIndex, lastIndex));
-      return response.data;
-    } catch {
-      enqueueSnackbar("Something went wrong", {
-        autoHideDuration: 3000,
-        variant: "error",
+      setNPage(Math.ceil(response.data.length / perPageRecords));
+
+    } catch(error){
+      console.log("error" , error);
+      setIsLoading(false);
+      toast.error("Something went wrong", {
+        position: "bottom-left",
+        autoClose: 5000,
+        theme: "colored",
       });
+      
     }
   };
 
@@ -81,8 +89,10 @@ function AdminUi() {
       filteredRecords.splice(index1, 1);
       setFilteredData(filteredRecords);
       setRecords(filteredData.slice(firstIndex, lastIndex));
+      setNPage(Math.ceil(filteredData.length / perPageRecords))
     }else{
       setRecords(usersData.all.slice(firstIndex, lastIndex));
+      setNPage(Math.ceil(usersData.all.length / perPageRecords));
     }
   };
 
@@ -93,13 +103,23 @@ function AdminUi() {
     onLoadHandler();
   }, []);
   
+  useEffect(() => {
+    console.log(npage , "npage" , currentPage , "currentPage")
+   if(records.length === 0 && currentPage > npage && npage > 0){
+        setCurrentPage(npage);
+   }
+  },[records])
+
   useEffect(()=>{
     if(searchText){
+      console.log("harsh 2nd" , records, currentPage)
       setRecords(filteredData.slice(firstIndex, lastIndex))
-    }else{
+    }else {
       setRecords(usersData.all.slice(firstIndex, lastIndex))
-    }
+    } 
   },[currentPage,filteredData])
+
+  
 
   //Setting the selected userId
   const selectUserData = (id) => {
@@ -131,6 +151,8 @@ function AdminUi() {
       );
     }
     setFilteredData(newData);
+    setNPage(Math.ceil(newData.length / perPageRecords));
+
   };
 
 //debounceSearch implemenation
@@ -146,7 +168,6 @@ function AdminUi() {
    const {name , checked} = e.target;
    if(searchText){
     if(name === "allData"){
-      let id = new Set();
       let len =  Math.floor(filteredData.length/10) + 1;
       let lastValue;
       if(len === currentPage) {
@@ -156,7 +177,6 @@ function AdminUi() {
       }
       for(let i = firstIndex; i < lastValue; i++){
        filteredData[i]["isChecked"] = checked;
-       id.add(filteredData.id);
       }
     }else{
         let index = filteredData.findIndex((user) => user.email === name);
@@ -186,15 +206,21 @@ function AdminUi() {
   const handleDeleteAll = () => {
     let newData = usersData.all.filter((record) => record.isChecked !== true);
     setUsersData({...usersData , all:newData});
-    if(searchText){
+    if(searchText){ 
       let data = filteredData.filter((record) => record.isChecked !== true);
       setFilteredData(data);
-      setRecords(data.slice(firstIndex, lastIndex))
-    }else
-    setRecords(newData.slice(firstIndex, lastIndex));
+      setNPage(Math.ceil(data.length / perPageRecords));
+      setRecords(data.slice(firstIndex, lastIndex)) 
+    }else{
+      setRecords(newData.slice(firstIndex, lastIndex));
+      setNPage(Math.ceil(newData.length / perPageRecords));
+    }
+ 
   }
   return (
+    
     <div className="container" id="page">
+      <ToastContainer />
       <header className="header">
         <form action="" className="search">
           <input
@@ -252,100 +278,120 @@ function AdminUi() {
             }
           })}
       </section>
-      <section className="display">
-        <table>
-          <thead>
-            <tr>
-              <th>
-                <input className="checkedUser" type="checkbox" 
-                checked={records.filter((record) => record?.isChecked !== true).length < 1} 
-                onChange={handleChecked}
-                name="allData" />
-              </th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.length
-              ? records.map((userData) => (
-                  <UserDetail
-                    key={userData.id}
-                    name={userData.name}
-                    email={userData.email}
-                    role={userData.role}
-                    deleteUserDetail={() => deleteUserDetail(userData.id)}
-                    selectUserData={() => selectUserData(userData.id)}
-                    handleChecked={handleChecked}
-                    userRecord={userData}
-                  />
-                ))
-              : null}
-          </tbody>
-        </table>
-      </section>
-      <section className="pagination">
-        <div className="delete-btn">
-          <button className="btn" onClick={handleDeleteAll}>Delete Selected</button>
-        </div>
-        <ul className="pagination__items">
-          <li className="pagination__item">
-            <button className={`pagination__btn ${
-                    currentPage <= 2 && "disabled"
-                  }`} onClick={doubleJumpPrev}>
-              <svg className="pagination__icon">
-                <use xlinkHref={`${Icons}#icon-controller-fast-backward`} />
-              </svg>
-            </button>
-          </li>
-          <li className="pagination__item">
-            <button className={`pagination__btn ${
-                    currentPage === 1 && "disabled"
-                  }`} onClick={prevPageHandler}>
-              <svg className="pagination__icon">
-                <use xlinkHref={`${Icons}#icon-triangle-left`} />
-              </svg>
-            </button>
-          </li>
-          {numbers.map((number) => {
-            return (
-              <li
-                className="pagination__item"
-                key={number}
-              >
-                <button
-                  className={`pagination__btn ${
-                    currentPage === number && "active"
-                  }`}
-                  onClick={() => currentPageHandler(number)}
-                >
-                  {number}
-                </button>
-              </li>
-            );
-          })}
-          <li className="pagination__item">
-            <button className={`pagination__btn ${
-                    currentPage === npage && "disabled"
-                  }`} onClick={nextPageHandler}>
-              <svg className="pagination__icon">
-                <use xlinkHref={`${Icons}#icon-triangle-right`} />
-              </svg>
-            </button>
-          </li>
-          <li className="pagination__item">
-            <button className={`pagination__btn ${
-                    currentPage >= npage - 1 && "disabled"
-                  }`} onClick={doubleJumpNext}>
-              <svg className="pagination__icon">
-                <use xlinkHref={`${Icons}#icon-controller-fast-forward`} />
-              </svg>
-            </button>
-          </li>
-        </ul>
-      </section>
+      {isLoading ? 
+               (<div className="isloading">
+                  <CircularProgress />
+                  <div>Loading users data...</div>
+                </div>)
+                :
+  (
+    <> 
+    {records.length ?
+    <>
+    <section className="display">
+     <table>
+       <thead>
+         <tr>
+           <th>
+             <input className="checkedUser" type="checkbox" 
+             checked={records.filter((record) => record?.isChecked !== true).length < 1} 
+             onChange={handleChecked}
+             name="allData" />
+           </th>
+           <th>Name</th>
+           <th>Email</th>
+           <th>Role</th>
+           <th>Actions</th>
+         </tr>
+       </thead>
+       <tbody>
+         { records.map((userData) => (
+               <UserDetail
+                 key={userData.id}
+                 name={userData.name}
+                 email={userData.email}
+                 role={userData.role}
+                 deleteUserDetail={() => deleteUserDetail(userData.id)}
+                 selectUserData={() => selectUserData(userData.id)}
+                 handleChecked={handleChecked}
+                 userRecord={userData}
+               />
+             ))
+           }
+       </tbody>
+     </table>
+   </section>
+   <section className="pagination">
+     <div className="delete-btn">
+       <button className="btn" onClick={handleDeleteAll}>Delete Selected</button>
+     </div>
+     <ul className="pagination__items">
+       <li className="pagination__item">
+         <button className={`pagination__btn ${
+                 currentPage <= 2 && "disabled"
+               }`} onClick={doubleJumpPrev}>
+           <svg className="pagination__icon">
+             <use xlinkHref={`${Icons}#icon-controller-fast-backward`} />
+           </svg>
+         </button>
+       </li>
+       <li className="pagination__item">
+         <button className={`pagination__btn ${
+                 currentPage === 1 && "disabled"
+               }`} onClick={prevPageHandler}>
+           <svg className="pagination__icon">
+             <use xlinkHref={`${Icons}#icon-triangle-left`} />
+           </svg>
+         </button>
+       </li>
+       {numbers.map((number) => {
+         return (
+           <li
+             className="pagination__item"
+             key={number}
+           >
+             <button
+               className={`pagination__btn ${
+                 currentPage === number && "active"
+               }`}
+               onClick={() => currentPageHandler(number)}
+             >
+               {number}
+             </button>
+           </li>
+         );
+       })}
+       <li className="pagination__item">
+         <button className={`pagination__btn ${
+                 currentPage === npage && "disabled"
+               }`} onClick={nextPageHandler}>
+           <svg className="pagination__icon">
+             <use xlinkHref={`${Icons}#icon-triangle-right`} />
+           </svg>
+         </button>
+       </li>
+       <li className="pagination__item">
+         <button className={`pagination__btn ${
+                 currentPage >= npage - 1 && "disabled"
+               }`} onClick={doubleJumpNext}>
+           <svg className="pagination__icon">
+             <use xlinkHref={`${Icons}#icon-controller-fast-forward`} />
+           </svg>
+         </button>
+       </li>
+     </ul>
+   </section>
+    </>
+    :  (
+      <Box className="isloading">
+        <SentimentDissatisfied />
+        <Box>No users found</Box>
+      </Box>
+    )
+   }        
+      </>
+         )
+      }
     </div>
   );
 }
